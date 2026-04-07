@@ -1,11 +1,19 @@
 package mai
 
 import (
-	"fmt"
+	"log"
+	"net/http"
 )
 
 func main() {
-	server := NewServeMux() * ServeMux
+	mux := http.NewServeMux()
 
-	fmt.Println(server)
+	server := http.Server{
+		Addr:    ":8080",
+		Handler: mux,
+	}
+
+	if err := server.ListenAndServe(); err != nil {
+		log.Fatal(err)
+	}
 }
