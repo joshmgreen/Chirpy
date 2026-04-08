@@ -5,12 +5,6 @@ import (
 	"net/http"
 )
 
-type homeHandler struct{}
-
-func (h *homeHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Welcome home!"))
-}
-
 func main() {
 	mux := http.NewServeMux()
 
