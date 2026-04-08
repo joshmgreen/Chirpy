@@ -10,12 +10,10 @@ func main() {
 
 	mux.Handle("/", http.FileServer(http.Dir(".")))
 
-	server := http.Server{
+	server := &http.Server{
 		Addr:    ":8080",
 		Handler: mux,
 	}
 
-	if err := server.ListenAndServe(); err != nil {
-		log.Fatal(err)
-	}
+	log.Fatal(server.ListenAndServe())
 }
