@@ -21,7 +21,7 @@ go test ./... -run TestName
 sqlc generate
 
 # Apply database migrations (requires goose)
-goose -dir sql/schema postgres "postgres://lappy:@localhost:5432/chirpy" up
+goose -dir sql/schema postgres "postgres://user:@localhost:5432/chirpy" up
 ```
 
 ## Environment
@@ -36,7 +36,7 @@ PLATFORM=dev   # or "prod"; "dev" enables the /admin/reset endpoint
 Connect directly to the database:
 
 ```bash
-psql "postgres://lappy:@localhost:5432/chirpy"
+psql "postgres://user:@localhost:5432/chirpy"
 ```
 
 ## Architecture

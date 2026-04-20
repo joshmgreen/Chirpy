@@ -1,59 +1,64 @@
-# CLAUDE.md
+# Chirpy
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+A simple microblogging REST API built with Go and PostgreSQL. Users can post short "chirps" (up to 140 characters) with automatic profanity filtering.
 
-## Commands
+## Tech Stack
+
+- **Go** — HTTP server using `net/http`
+- **PostgreSQL** — primary data store
+- **sqlc** — generates type-safe Go code from SQL queries
+- **goose** — database migrations
+
+## Prerequisites
+
+- Go 1.21+
+- PostgreSQL
+- [sqlc](https://sqlc.dev) (for regenerating database code)
+- [goose](https://github.com/pressly/goose) (for running migrations)
+
+## Setup
+
+1. Clone the repo and create a `.env` file:
+
+```
+DB_URL=postgres://user:password@localhost:5432/chirpy
+PLATFORM=dev
+```
+
+> Set `PLATFORM=prod` to disable the `/admin/reset` endpoint.
+
+2. Apply database migrations:
 
 ```bash
-# Run the server
-go build -o out/chirpy && ./out/chirpy
+goose -dir sql/schema postgres "postgres://user:password@localhost:5432/chirpy" up
+```
 
-# Or run directly
+## Running
+
+```bash
 go run .
-
-# Run tests
-go test ./...
-
-# Run a single test
-go test ./... -run TestName
-
-# Generate database code from SQL (requires sqlc)
-sqlc generate
-
-# Apply database migrations (requires goose)
-goose -dir sql/schema postgres "postgres://<user>:@localhost:5432/chirpy" up
 ```
 
-## Environment
-
-Requires a `.env` file (or environment variables):
-
-```
-DB_URL=postgres://user:password@host:port/chirpy
-PLATFORM=dev   # or "prod"; "dev" enables the /admin/reset endpoint
-```
-
-Connect directly to the database:
+Or build first:
 
 ```bash
-psql "postgres://<user>:@localhost:5432/chirpy"
+go build -o out/chirpy && ./out/chirpy
 ```
 
-## Architecture
+## API
 
-This is a Go HTTP API server (`package main`, flat structure) backed by PostgreSQL.
+| Method | Path | Description |
+|--------|------|-------------|
+| `GET` | `/api/healthz` | Health check |
+| `POST` | `/api/users` | Create a user |
+| `POST` | `/api/chirps` | Post a chirp (max 140 chars) |
+| `GET` | `/api/chirps` | Get all chirps |
+| `GET` | `/api/chirps/{chirpID}` | Get a single chirp |
+| `GET` | `/admin/metrics` | View request hit count |
+| `POST` | `/admin/reset` | Reset metrics and wipe DB (dev only) |
 
-**Request flow:** `main.go` sets up `apiConfig` (holds DB connection + platform + hit counter) and registers all routes on a plain `net/http.ServeMux`. Handlers are either standalone functions or methods on `*apiConfig` when they need DB/config access.
+## Tests
 
-**Database layer:** SQL queries live in `sql/queries/`, schema migrations in `sql/schema/` (goose format). `sqlc` generates type-safe Go code into `internal/database/` — never edit files in that directory directly; edit the `.sql` source files and re-run `sqlc generate`.
-
-**Response helpers:** `json.go` provides `respondWithJSON` and `respondWithError` used by all handlers.
-
-**Routes:**
-
-- `GET /api/healthz` — readiness check
-- `POST /api/users` — create user
-- `POST /api/chirps` — validate and clean chirp body (profanity filter, 140-char limit)
-- `GET /admin/metrics` — fileserver hit count (HTML)
-- `POST /admin/reset` — reset hit counter + wipe DB (dev only)
-- `/app/` — static file server
+```bash
+go test ./...
+```
